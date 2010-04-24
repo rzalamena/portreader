@@ -1,0 +1,41 @@
+portreader
+
+This is a small tool to read and write stuff directly to the physical memory or port address.
+You should only use this if you really know what are you doing.
+
+Usage
+---
+
+Compile the program from source:
+ $ make
+or
+ $ gcc portreader.c -o portreader
+
+Call it:
+ $ ./portreader
+
+Fill the fields according to the questions.
+
+or
+
+ $ ./portreader [mem or port] [address to read/write from] [value to write in the address]
+ example:
+ $ ./portreader port 0x03ff0000 0x00000000
+ or
+ $ ./portreader port 0x03ff0000 500
+
+If you just want to read from memory/port then:
+ $ ./portreader port 0x03ff0000
+
+and then when it asks for a value to write, abort the program with interrupt signal (CTRL + C | ^C)
+
+If you need more info about what is going on in the background, just active the debugging in the program macro.
+
+snip
+---
+...
+#define DBUG 1
+...
+
+
+For more information read the 'mem' manpage.

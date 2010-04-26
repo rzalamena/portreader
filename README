@@ -18,14 +18,17 @@ Fill the fields according to the questions.
 
 or
 
- $ ./portreader [mem or port] [address to read/write from] [value to write in the address]
+ $ ./portreader [<mem or port> [[<address - dec or hex> <range>] <value - dec or hex>]]
  example:
- $ ./portreader port 0x03ff0000 0x00000000
+ $ ./portreader port 0x03ff0000 0 0x00000000
  or
- $ ./portreader port 0x03ff0000 500
+ $ ./portreader port 0x03ff0000 0 500
 
 If you just want to read from memory/port then:
  $ ./portreader port 0x03ff0000
+
+or if you want to read a range
+ $ ./portreader port 0x03ff0000 10
 
 and then when it asks for a value to write, abort the program with interrupt signal (CTRL + C | ^C)
 
@@ -36,6 +39,16 @@ snip
 ...
 #define DBUG 1
 ...
+---
+
+If you want to translate the hex numbers output to char just active the 'show char' macro.
+
+snip
+---
+...
+#define SHWCHR 1
+...
+---
 
 
 For more information read the 'mem' manpage.

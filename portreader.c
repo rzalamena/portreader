@@ -32,6 +32,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <limits.h>
 #include <err.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -39,7 +40,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#define DBUG 1
+#define DBUG 0
+#define SHWCHR 0
 
 static void	usage(char *);
 static void	dbgm(const char *);
@@ -47,7 +49,7 @@ static void	dbgm(const char *);
 static void
 usage(char *argv)
 {
-		fprintf(stderr, "%s [mem ou port] [address - dec or hex] [value - dec or hex]\n", argv);
+		fprintf(stderr, "%s [<mem or port> [[<address - dec or hex> <range>] <value - dec or hex>]]\n", argv);
 		exit(1);
 }
 
@@ -62,14 +64,17 @@ int
 main(int argc, char *argv[])
 {
 		char		in[12], conv[5];
-		int		portfd;
+		unsigned short	range;
+		int		portfd, it;
+		long		test;
 		u_int32_t	addrin, value;
 
 		ssize_t		m;
 		off_t		n;
 
+		printf("\n");
 
-		if (argc > 4)
+		if (argc > 5)
 			usage(argv[0]);
 
 		if (argc >= 2)
@@ -100,7 +105,7 @@ main(int argc, char *argv[])
 		else
 		{
 			printf("What memory address do you want to read?\n");
-			scanf("%11s %*s", in);
+			fgets(in, sizeof(in), stdin);
 			in[sizeof(in) - 1] = '\0';
 		}
 
@@ -132,36 +137,89 @@ main(int argc, char *argv[])
 
 		printf("0x%08x contains 0x%08x\n", addrin, value);
 
-		if (DBUG)
+		if (SHWCHR)
 		{
 			memset(conv, 0x0, sizeof(conv));
 
 			/* LITTLE-ENDIAN */
-			conv[0] = ((char *) value) - 3;
-			conv[1] = ((char *) value) - 2;
-			conv[2] = ((char *) value) - 1;
-			conv[3] = ((char *) value);
+			memcpy(conv, &value, sizeof(value));
+			conv[5] = conv[0];
+			conv[0] = conv[3];
+			conv[3] = conv[5];
+
+			conv[5] = conv[1];
+			conv[1] = conv[2];
+			conv[2] = conv[5];
 
 			/* BIG-ENDIAN
-			conv[0] = ((char *) value);
-			conv[1] = ((char *) value) - 1;
-			conv[2] = ((char *) value) - 2;
-			conv[3] = ((char *) value) - 3;
+			memcpy(conv, &value, sizeof(value));
 			*/
 
 			conv[sizeof(conv) - 1] = '\0';
-			printf("0x%08x contains %s\n(when string convertion occurs)\n", addrin, conv);
+			printf("0x%08x contains %c%c%c%c\n", addrin, conv[0], conv[1], conv[2], conv[3]);
 		}
 
-		if (argc == 4)
+		/* read a range of values */
+		if (argc >= 4)
 		{
-			strncpy(in, argv[3], sizeof(in));
+			test = strtol(argv[3], NULL, 0);
+			if (test > USHRT_MAX || test < 0)
+			{
+				fprintf(stderr, "Range is too big or negative\n");
+				exit(1);
+			}
+			range = test;				
+
+			if (range == 0 || range < 0)
+				printf("No range, skipping this part\n");
+			else
+			{
+				printf("\nStart of range\n---\n");
+				for (it = 1; it <= range; it = it + 1)
+				{
+					memset(&value, 0x0, sizeof(value));
+					m = read(portfd, &value, sizeof(value));
+					if (m == -1)
+						err(0, "read error");
+
+					printf("0x%08x contains 0x%08x\n", addrin + (0x04 * it), value);
+					if (SHWCHR)
+					{
+						memset(conv, 0x0, sizeof(conv));
+
+						/* LITTLE-ENDIAN */
+						memcpy(conv, &value, sizeof(value));
+						conv[5] = conv[0];
+						conv[0] = conv[3];
+						conv[3] = conv[5];
+
+						conv[5] = conv[1];
+						conv[1] = conv[2];
+						conv[2] = conv[5];
+
+						/* BIG-ENDIAN
+						 * memcpy(conv, &value, sizeof(value));
+						 */
+
+						conv[sizeof(conv) - 1] = '\0';
+						printf("0x%08x contains %c%c%c%c\n", addrin + (0x04 * it), conv[0], conv[1], conv[2], conv[3]);
+					}
+				}
+				printf("---\nEnd of range\n\n");
+			}
+		}
+
+
+
+		if (argc == 5)
+		{
+			strncpy(in, argv[4], sizeof(in));
 			in[sizeof(in) - 1] = '\0';
 		}
 		else
 		{
 			printf("\nWhat do you want to write at 0x%08x?\n", addrin);
-			scanf("%11s %*s", in);
+			fgets(in, sizeof(in), stdin);
 			in[sizeof(in) - 1] = '\0';
 		}
 
@@ -204,6 +262,7 @@ main(int argc, char *argv[])
 			err(0, "reading error");
 
 		printf("The address 0x%08x now contains the value 0x%08x.\n", addrin, value);
+		printf("\n");
 		exit(0);
 }
 

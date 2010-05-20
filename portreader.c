@@ -1,33 +1,19 @@
 /*
-* Copyright (c) 2010, Rafael F. Zalamena <rzalamena@gmail.com>
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-* 1. Redistributions of source code must retain the above copyright
-* notice, this list of conditions and the following disclaimer.
-* 2. Redistributions in binary form must reproduce the above copyright
-* notice, this list of conditions and the following disclaimer in the
-* documentation and/or other materials provided with the distribution.
-* 3. All advertising materials mentioning features or use of this software
-* must display the following acknowledgement:
-* This product includes software developed by Rafael F. Zalamena.
-* 4. Neither the name of Rafael F. Zalamena nor the
-* names of its contributors may be used to endorse or promote products
-* derived from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY RAFAEL F. ZALAMENA ''AS IS'' AND ANY
-* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL RAFAEL F. ZALAMENA BE LIABLE FOR ANY
-* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-*/
+ * Copyright (c) 2010 Rafael F. Zalamena <rzalamena@gmail.com>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -43,8 +29,8 @@
 #define DBUG 0
 #define SHWCHR 0
 
-static void	usage(char *);
-static void	dbgm(const char *);
+static void			usage(char *);
+static void			dbgm(const char *);
 
 static void
 usage(char *argv)
@@ -67,7 +53,7 @@ main(int argc, char *argv[])
 		unsigned short	range;
 		int		portfd, it;
 		long		test;
-		u_int32_t	addrin, value;
+		unsigned int	addrin, value;
 
 		ssize_t		m;
 		off_t		n;
@@ -113,7 +99,7 @@ main(int argc, char *argv[])
 		dbgm("addrin read:");
 		dbgm(in);
 
-		addrin = strtol(in, NULL, 0);
+		addrin = strtoul(in, NULL, 16);
 
 		if (DBUG)
 		{
@@ -162,7 +148,7 @@ main(int argc, char *argv[])
 		/* read a range of values */
 		if (argc >= 4)
 		{
-			test = strtol(argv[3], NULL, 0);
+			test = strtoul(argv[3], NULL, 16);
 			if (test > USHRT_MAX || test < 0)
 			{
 				fprintf(stderr, "Range is too big or negative\n");
@@ -170,7 +156,7 @@ main(int argc, char *argv[])
 			}
 			range = test;				
 
-			if (range == 0 || range < 0)
+			if (range == 0)
 				printf("No range, skipping this part\n");
 			else
 			{
@@ -227,7 +213,7 @@ main(int argc, char *argv[])
 		dbgm(in);
 
 		memset(&value, 0x0, sizeof(value));
-		value = strtol(in, NULL, 0);
+		value = strtoul(in, NULL, 16);
 
 		if (DBUG)
 		{
